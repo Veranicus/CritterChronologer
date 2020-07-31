@@ -27,8 +27,20 @@ public class Employee {
     @JoinTable(name = "day")
     private Set<DayOfWeek> daysAvailable;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "schedule_id")
+    private Schedule schedule;
+
     public long getId() {
         return id;
+    }
+
+    public Schedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(Schedule schedule) {
+        this.schedule = schedule;
     }
 
     public void setId(long id) {

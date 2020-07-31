@@ -6,6 +6,7 @@ import com.udacity.jdnd.course3.critter.repository.PetRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -25,13 +26,15 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional
     public PetDTO savePet(PetDTO petDTO) {
-        if (petDTO.getCustomerId() != null) {
             System.out.println(petDTO.getCustomerId());
             Pet pet = new Pet();
             BeanUtils.copyProperties(petDTO, pet);
+        if (petDTO.getCustomerId() != null) {
             pet.setCustomer(customerService.getCustomer(petDTO.getCustomerId()));
-            customerService.updateCustomerPets(petDTO.getCustomerId(), petRepository.save(pet));
+//            customerService.updateCustomerPets(petDTO.getCustomerId(), savedPet);
+            petDTO.setId(petRepository.save(pet).getId());
         }
         return petDTO;
     }
@@ -43,6 +46,7 @@ public class PetServiceImpl implements PetService {
                 .orElseThrow(EntityNotFoundException::new);
         BeanUtils.copyProperties(pet,
                 petDTO);
+        petDTO.setCustomerId(pet.getCustomer().getId());
         return petDTO;
     }
 
@@ -53,6 +57,7 @@ public class PetServiceImpl implements PetService {
                 pet -> {
                     PetDTO petDTO = new PetDTO();
                     BeanUtils.copyProperties(pet, petDTO);
+                    petDTO.setCustomerId(pet.getCustomer().getId());
                     petDTOS.add(petDTO);
                 }
         );
@@ -61,6 +66,16 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public List<PetDTO> getPetsByOwner(long ownerId) {
-        return null;
+        List<PetDTO> returnedPetsOfOwner = new ArrayList<>();
+        List<Pet> returnedPets = petRepository.findAllByCustomer_Id(ownerId);
+        if (returnedPets != null) {
+            for (int i = 0; i < returnedPets.size(); i++) {
+                PetDTO petDTO = new PetDTO();
+                BeanUtils.copyProperties(returnedPets.get(i),petDTO);
+                petDTO.setCustomerId(returnedPets.get(i).getCustomer().getId());
+                returnedPetsOfOwner.add(petDTO);
+            }
+        }
+        return returnedPetsOfOwner;
     }
 }

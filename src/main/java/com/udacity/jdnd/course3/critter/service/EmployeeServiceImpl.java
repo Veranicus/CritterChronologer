@@ -25,7 +25,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDTO saveEmployee(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-        employeeRepository.save(employee);
+        employeeDTO.setId(employeeRepository.save(employee).getId());
         return employeeDTO;
     }
 
@@ -42,7 +42,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void setAvailability(Set<DayOfWeek> daysAvailable, long employeeId) {
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(EntityNotFoundException::new);
         employee.setDaysAvailable(daysAvailable);
-        employeeRepository.save(employee);
+        employeeRepository.save(employee).getId();
     }
 
     @Override

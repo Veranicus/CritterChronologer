@@ -35,6 +35,7 @@ public class PetController {
 
     @GetMapping("/owner/{ownerId}")
     public List<PetDTO> getPetsByOwner(@PathVariable long ownerId) {
-        throw new UnsupportedOperationException();
+        System.out.println("SIZE OF GETPETSBYOWNER " + petService.getPetsByOwner(ownerId).size());
+       return petService.getPetsByOwner(ownerId);
     }
 }

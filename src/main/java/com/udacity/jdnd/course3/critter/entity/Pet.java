@@ -19,8 +19,8 @@ public class Pet {
     @Nationalized
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id",nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_id",nullable = true)
     private Customer customer;
 //
 //    @ManyToOne(fetch = FetchType.LAZY)
@@ -87,5 +87,31 @@ public class Pet {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Pet pet = (Pet) o;
+
+        if (id != null ? !id.equals(pet.id) : pet.id != null) return false;
+        if (type != pet.type) return false;
+        if (name != null ? !name.equals(pet.name) : pet.name != null) return false;
+        if (customer != null ? !customer.equals(pet.customer) : pet.customer != null) return false;
+        if (birthDate != null ? !birthDate.equals(pet.birthDate) : pet.birthDate != null) return false;
+        return notes != null ? notes.equals(pet.notes) : pet.notes == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (customer != null ? customer.hashCode() : 0);
+        result = 31 * result + (birthDate != null ? birthDate.hashCode() : 0);
+        result = 31 * result + (notes != null ? notes.hashCode() : 0);
+        return result;
     }
 }
