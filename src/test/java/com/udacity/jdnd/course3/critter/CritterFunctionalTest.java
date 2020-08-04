@@ -131,6 +131,7 @@ public class CritterFunctionalTest {
 
         CustomerDTO owner = userController.getOwnerByPet(newPet.getId());
         Assertions.assertEquals(owner.getId(), newCustomer.getId());
+        System.out.println("ID OF NEW PET" + newPet.getId());
 //       When I try this manually with postman it works fine but it doesn't work in the unit test case
 //        I don't know why
         Assertions.assertEquals(owner.getPetIds().get(0), newPet.getId());

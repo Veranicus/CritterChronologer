@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CustomerServiceImpl implements CustomerService {
 
     private CustomerRepository customerRepository;
@@ -70,13 +72,6 @@ public class CustomerServiceImpl implements CustomerService {
             customerDTOS.add(customerDTO);
         }
         return customerDTOS;
-    }
-
-    @Override
-    public void updateCustomerPets(Long customerId, Pet pet) {
-        Customer customer = getCustomer(customerId);
-        customer.getPets().add(pet);
-        customerRepository.save(customer);
     }
 
     @Override
