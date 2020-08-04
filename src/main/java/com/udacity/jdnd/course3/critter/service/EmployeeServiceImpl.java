@@ -8,11 +8,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 @Service
+@Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
@@ -24,6 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeDTO saveEmployee(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
+        employee.setSchedule(null);
         BeanUtils.copyProperties(employeeDTO, employee);
         employeeDTO.setId(employeeRepository.save(employee).getId());
         return employeeDTO;
@@ -42,11 +46,38 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void setAvailability(Set<DayOfWeek> daysAvailable, long employeeId) {
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(EntityNotFoundException::new);
         employee.setDaysAvailable(daysAvailable);
-        employeeRepository.save(employee).getId();
+        employeeRepository.save(employee);
     }
 
     @Override
     public List<EmployeeDTO> findEmployeesForService(EmployeeRequestDTO employeeRequestDTO) {
-        return null;
+
+        List<Employee> allEmployees = employeeRepository.findAll();
+
+        List<Employee> availableEmployeesDayOfWeek = new ArrayList<>();
+
+        List<Employee> availableEmployeesTotal = new ArrayList<>();
+
+        allEmployees.forEach(employee -> {
+            employee.getDaysAvailable().forEach(dayOfWeek -> {
+                if (dayOfWeek.equals(employeeRequestDTO.getDate().getDayOfWeek())) {
+                    availableEmployeesDayOfWeek.add(employee);
+                }
+            });
+        });
+
+        availableEmployeesDayOfWeek.forEach(employee -> {
+            if (employee.getSkills().containsAll(employeeRequestDTO.getSkills())) {
+                availableEmployeesTotal.add(employee);
+            }
+        });
+
+        List<EmployeeDTO> allAvailableEmployeesDTOs = new ArrayList<>();
+        availableEmployeesTotal.forEach(employee -> {
+            EmployeeDTO employeeDTO = new EmployeeDTO();
+            BeanUtils.copyProperties(employee, employeeDTO);
+            allAvailableEmployeesDTOs.add(employeeDTO);
+        });
+        return allAvailableEmployeesDTOs;
     }
 }

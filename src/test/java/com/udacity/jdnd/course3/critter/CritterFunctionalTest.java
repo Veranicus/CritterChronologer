@@ -27,12 +27,11 @@ import java.util.stream.IntStream;
  * Students will need to configure the application to run these tests by adding application.properties file
  * to the test/resources directory that specifies the datasource. It can run using an in-memory H2 instance
  * and should not try to re-use the same datasource used by the rest of the app.
- *
+ * <p>
  * These tests should all pass once the project is complete.
  */
 @Transactional
 @SpringBootTest(classes = CritterApplication.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class CritterFunctionalTest {
 
     @Autowired
@@ -45,7 +44,7 @@ public class CritterFunctionalTest {
     private ScheduleController scheduleController;
 
     @Test
-    public void testCreateCustomer(){
+    public void testCreateCustomer() {
         CustomerDTO customerDTO = createCustomerDTO();
         CustomerDTO newCustomer = userController.saveCustomer(customerDTO);
         CustomerDTO retrievedCustomer = userController.getAllCustomers().get(0);
@@ -55,7 +54,7 @@ public class CritterFunctionalTest {
     }
 
     @Test
-    public void testCreateEmployee(){
+    public void testCreateEmployee() {
         EmployeeDTO employeeDTO = createEmployeeDTO();
         EmployeeDTO newEmployee = userController.saveEmployee(employeeDTO);
         EmployeeDTO retrievedEmployee = userController.getEmployee(newEmployee.getId());
@@ -65,6 +64,7 @@ public class CritterFunctionalTest {
     }
 
     @Test
+    @DirtiesContext
     public void testAddPetsToCustomer() {
         CustomerDTO customerDTO = createCustomerDTO();
         CustomerDTO newCustomer = userController.saveCustomer(customerDTO);
@@ -89,7 +89,7 @@ public class CritterFunctionalTest {
         System.out.println(retrievedCustomer.getPetIds() != null);
         System.out.println(retrievedCustomer.getPetIds().size());
         System.out.println(retrievedCustomer.getPetIds().size() > 0);
-
+        //I try the exact procedure of this unit test with postman and it works correctly, but on this assert the test fails.
         Assertions.assertTrue(retrievedCustomer.getPetIds() != null && retrievedCustomer.getPetIds().size() > 0);
         Assertions.assertEquals(retrievedCustomer.getPetIds().get(0), retrievedPet.getId());
     }
@@ -107,12 +107,20 @@ public class CritterFunctionalTest {
         PetDTO newPet2 = petController.savePet(petDTO);
 
         List<PetDTO> pets = petController.getPetsByOwner(newCustomer.getId());
-//        Assertions.assertEquals(pets.size(), 2);
+//        Again the same problem, When I try this exact procedure with postman I have
+//        2 pets in the list. In here I get exception that there is only one pet.
+//        I think it's probably because hibernate things in this test that petDto is still
+//        managed entity so he updates it instead of adding new pet. Inside postman on the other hand
+//        it works correctly as it should from the stand point of the business logic
+//        where one customer can have two different pets and each and every pet should
+//        belong to single owner.
+        Assertions.assertEquals(pets.size(), 2);
         Assertions.assertEquals(pets.get(0).getCustomerId(), newCustomer.getId());
         Assertions.assertEquals(pets.get(0).getId(), newPet.getId());
     }
 
     @Test
+    @DirtiesContext
     public void testFindOwnerByPet() {
         CustomerDTO customerDTO = createCustomerDTO();
         CustomerDTO newCustomer = userController.saveCustomer(customerDTO);
@@ -123,7 +131,7 @@ public class CritterFunctionalTest {
 
         CustomerDTO owner = userController.getOwnerByPet(newPet.getId());
         Assertions.assertEquals(owner.getId(), newCustomer.getId());
-//        When I try this manually with postman it works fine but it doesn't work in the unit test case
+//       When I try this manually with postman it works fine but it doesn't work in the unit test case
 //        I don't know why
         Assertions.assertEquals(owner.getPetIds().get(0), newPet.getId());
     }
@@ -191,7 +199,7 @@ public class CritterFunctionalTest {
         LocalDate date = LocalDate.of(2019, 12, 25);
         List<Long> petList = Lists.newArrayList(petDTO.getId());
         List<Long> employeeList = Lists.newArrayList(employeeDTO.getId());
-        Set<EmployeeSkill> skillSet =  Sets.newHashSet(EmployeeSkill.PETTING);
+        Set<EmployeeSkill> skillSet = Sets.newHashSet(EmployeeSkill.PETTING);
 
         scheduleController.createSchedule(createScheduleDTO(petList, employeeList, date, skillSet));
         ScheduleDTO scheduleDTO = scheduleController.getAllSchedules().get(0);
@@ -256,6 +264,7 @@ public class CritterFunctionalTest {
         employeeDTO.setSkills(Sets.newHashSet(EmployeeSkill.FEEDING, EmployeeSkill.PETTING));
         return employeeDTO;
     }
+
     private static CustomerDTO createCustomerDTO() {
         CustomerDTO customerDTO = new CustomerDTO();
         customerDTO.setName("TestEmployee");

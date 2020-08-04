@@ -20,8 +20,12 @@ public class Pet {
     private String name;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "customer_id",nullable = true)
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "schedule_id_pet", nullable = true)
+    private Schedule schedule;
 //
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "customer_id")
@@ -57,6 +61,13 @@ public class Pet {
         this.name = name;
     }
 
+    public Schedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(Schedule schedule) {
+        this.schedule = schedule;
+    }
 //    public Customer getCustomer() {
 //        return customer;
 //    }

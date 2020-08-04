@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class PetServiceImpl implements PetService {
 
     private final PetRepository petRepository;
@@ -28,14 +29,14 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional
     public PetDTO savePet(PetDTO petDTO) {
-            System.out.println(petDTO.getCustomerId());
-            Pet pet = new Pet();
-            BeanUtils.copyProperties(petDTO, pet);
+        System.out.println(petDTO.getCustomerId());
+        Pet pet = new Pet();
+        BeanUtils.copyProperties(petDTO, pet);
         if (petDTO.getCustomerId() != null) {
             pet.setCustomer(customerService.getCustomer(petDTO.getCustomerId()));
 //            customerService.updateCustomerPets(petDTO.getCustomerId(), savedPet);
-            petDTO.setId(petRepository.save(pet).getId());
         }
+        petDTO.setId(petRepository.save(pet).getId());
         return petDTO;
     }
 
@@ -57,7 +58,9 @@ public class PetServiceImpl implements PetService {
                 pet -> {
                     PetDTO petDTO = new PetDTO();
                     BeanUtils.copyProperties(pet, petDTO);
-                    petDTO.setCustomerId(pet.getCustomer().getId());
+                    if (pet.getCustomer() != null) {
+                        petDTO.setCustomerId(pet.getCustomer().getId());
+                    }
                     petDTOS.add(petDTO);
                 }
         );

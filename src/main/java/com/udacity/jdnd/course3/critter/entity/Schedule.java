@@ -14,17 +14,17 @@ public class Schedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "schedule")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "schedule")
     private List<Employee> employees;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "schedule")
     private List<Pet> pets;
 
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(targetClass = EmployeeSkill.class)
-    @JoinTable(name = "skill")
+    @JoinTable(name = "skill_schedule")
     private Set<EmployeeSkill> activities;
 
     public Long getId() {

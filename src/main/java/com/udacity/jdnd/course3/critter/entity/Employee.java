@@ -11,15 +11,15 @@ import java.util.Set;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     @Nationalized
     private String name;
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(targetClass = EmployeeSkill.class)
-    @JoinTable(name = "skill")
+    @JoinTable(name = "skill_employee")
     private Set<EmployeeSkill> skills;
 
     @Enumerated(EnumType.STRING)
@@ -27,12 +27,32 @@ public class Employee {
     @JoinTable(name = "day")
     private Set<DayOfWeek> daysAvailable;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "schedule_id")
+    @ManyToOne
+    @JoinColumn(name = "schedule_id_employee", nullable = true)
     private Schedule schedule;
 
-    public long getId() {
+    public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+//    public Schedule getSchedule() {
+//        return schedule;
+//    }
+//
+//    public void setSchedule(Schedule schedule) {
+//        this.schedule = schedule;
+//    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Schedule getSchedule() {
@@ -41,14 +61,6 @@ public class Employee {
 
     public void setSchedule(Schedule schedule) {
         this.schedule = schedule;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
