@@ -2,9 +2,7 @@ package com.udacity.jdnd.course3.critter.service;
 
 import com.udacity.jdnd.course3.critter.entity.Employee;
 import com.udacity.jdnd.course3.critter.repository.EmployeeRepository;
-import com.udacity.jdnd.course3.critter.user.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.user.EmployeeRequestDTO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -25,21 +23,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeDTO saveEmployee(EmployeeDTO employeeDTO) {
-        Employee employee = new Employee();
+    public Employee saveEmployee(Employee employee) {
         employee.setSchedule(null);
-        BeanUtils.copyProperties(employeeDTO, employee);
-        employeeDTO.setId(employeeRepository.save(employee).getId());
-        return employeeDTO;
+        return employeeRepository.save(employee);
     }
 
     @Override
-    public EmployeeDTO getEmployee(long employeeId) {
-        EmployeeDTO employeeDTO1 = new EmployeeDTO();
-        Employee employee = employeeRepository.findById(employeeId)
+    public Employee getEmployee(long employeeId) {
+        return employeeRepository.findById(employeeId)
                 .orElseThrow(EntityNotFoundException::new);
-        BeanUtils.copyProperties(employee, employeeDTO1);
-        return employeeDTO1;
     }
 
     @Override
@@ -50,7 +42,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeDTO> findEmployeesForService(EmployeeRequestDTO employeeRequestDTO) {
+    public List<Employee> findEmployeesForService(EmployeeRequestDTO employeeRequestDTO) {
 
         List<Employee> allEmployees = employeeRepository.findAll();
 
@@ -72,12 +64,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         });
 
-        List<EmployeeDTO> allAvailableEmployeesDTOs = new ArrayList<>();
-        availableEmployeesTotal.forEach(employee -> {
-            EmployeeDTO employeeDTO = new EmployeeDTO();
-            BeanUtils.copyProperties(employee, employeeDTO);
-            allAvailableEmployeesDTOs.add(employeeDTO);
-        });
-        return allAvailableEmployeesDTOs;
+        return availableEmployeesTotal;
     }
 }

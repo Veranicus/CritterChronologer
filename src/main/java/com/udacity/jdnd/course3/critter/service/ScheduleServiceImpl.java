@@ -6,10 +6,10 @@ import com.udacity.jdnd.course3.critter.entity.Schedule;
 import com.udacity.jdnd.course3.critter.repository.EmployeeRepository;
 import com.udacity.jdnd.course3.critter.repository.PetRepository;
 import com.udacity.jdnd.course3.critter.repository.ScheduleRepository;
-import com.udacity.jdnd.course3.critter.schedule.ScheduleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,39 +33,43 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public ScheduleDTO createSchedule(ScheduleDTO scheduleDTO) {
-
-        Schedule schedule = new Schedule();
+    public Schedule createSchedule(Schedule schedule, List<Long> petIds,
+                                   List<Long> employeeIds) {
 
         List<Pet> pets = new ArrayList<>();
-        scheduleDTO.getPetIds().forEach(pet -> {
-            pets.add(petRepository.findById(pet).get());
+        petIds.forEach(pet -> {
+            pets.add(petRepository.findById(pet).orElseThrow(EntityNotFoundException::new));
         });
 
         List<Employee> employees = new ArrayList<>();
 
-        scheduleDTO.getEmployeeIds().forEach(employee -> {
-            employees.add(employeeRepository.findById(employee).get());
+        employeeIds.forEach(employee -> {
+            employees.add(employeeRepository.findById(employee).orElseThrow(EntityNotFoundException::new));
         });
 
         schedule.setPets(pets);
         schedule.setEmployees(employees);
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+        pets.forEach(pet -> {
+            petRepository.findById(pet.getId()).orElseThrow(EntityNotFoundException::new).setSchedule(schedule);
+//            pet.setSchedule(savedSchedule);
+        });
+        employees.forEach(employee -> {
+//            employee.setSchedule(savedSchedule);
+            employeeRepository.findById(employee.getId()).orElseThrow(EntityNotFoundException::new).setSchedule(schedule);
+        });
 
-        schedule.setDate(scheduleDTO.getDate());
-        schedule.setActivities(scheduleDTO.getActivities());
-
-        scheduleDTO.setId(scheduleRepository.save(schedule).getId());
-        return scheduleDTO;
+        return savedSchedule;
     }
 
     @Override
-    public List<ScheduleDTO> getAllSchedules() {
+    public List<Schedule> getAllSchedules() {
 
-        return convertListSchedulesToListSchedulesDtos(scheduleRepository.findAll());
+        return scheduleRepository.findAll();
     }
 
     @Override
-    public List<ScheduleDTO> getScheduleForPet(Long petId) {
+    public List<Schedule> getScheduleForPet(Long petId) {
         List<Schedule> schedules = scheduleRepository.findAll();
         List<Schedule> schedulesPets = new ArrayList<>();
         schedules.forEach(schedule -> {
@@ -75,11 +79,11 @@ public class ScheduleServiceImpl implements ScheduleService {
                 }
             });
         });
-        return convertListSchedulesToListSchedulesDtos(schedulesPets);
+        return schedulesPets;
     }
 
     @Override
-    public List<ScheduleDTO> getScheduleForEmployee(Long employeeId) {
+    public List<Schedule> getScheduleForEmployee(Long employeeId) {
         List<Schedule> schedules = scheduleRepository.findAll();
         List<Schedule> scheduleEmployees = new ArrayList<>();
         schedules.forEach(schedule -> {
@@ -89,11 +93,11 @@ public class ScheduleServiceImpl implements ScheduleService {
                 }
             });
         });
-        return convertListSchedulesToListSchedulesDtos(scheduleEmployees);
+        return scheduleEmployees;
     }
 
     @Override
-    public List<ScheduleDTO> getScheduleForCustomer(Long customerId) {
+    public List<Schedule> getScheduleForCustomer(Long customerId) {
         List<Schedule> schedules = scheduleRepository.findAll();
         List<Schedule> scheduleCustomers = new ArrayList<>();
         schedules.forEach(schedule -> {
@@ -105,28 +109,6 @@ public class ScheduleServiceImpl implements ScheduleService {
         });
 
 
-        return convertListSchedulesToListSchedulesDtos(scheduleCustomers);
-    }
-
-    private List<ScheduleDTO> convertListSchedulesToListSchedulesDtos(List<Schedule> schedules) {
-
-        List<ScheduleDTO> scheduleDTOS = new ArrayList<>();
-
-        schedules.forEach(schedule -> {
-
-            List<Long> employeeIds = new ArrayList<>();
-
-            List<Long> petIds = new ArrayList<>();
-            schedule.getEmployees().forEach(employee -> {
-                employeeIds.add(employee.getId());
-            });
-            schedule.getPets().forEach(pet -> {
-                petIds.add(pet.getId());
-            });
-            scheduleDTOS.add(new ScheduleDTO(schedule.getId(), employeeIds, petIds,
-                    schedule.getDate(), schedule.getActivities()));
-        });
-        return scheduleDTOS;
-
+        return scheduleCustomers;
     }
 }

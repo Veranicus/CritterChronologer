@@ -96,6 +96,19 @@ public class Pet {
         this.customer = customer;
     }
 
+    @Override
+    public String toString() {
+        return "Pet{" +
+                "id=" + id +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                ", customer=" + customer +
+                ", schedule=" + schedule +
+                ", birthDate=" + birthDate +
+                ", notes='" + notes + '\'' +
+                '}';
+    }
+
     public void setNotes(String notes) {
         this.notes = notes;
     }

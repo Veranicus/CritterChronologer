@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
  */
 @Transactional
 @SpringBootTest(classes = CritterApplication.class)
+@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
 public class CritterFunctionalTest {
 
     @Autowired

@@ -4,8 +4,6 @@ import com.udacity.jdnd.course3.critter.entity.Customer;
 import com.udacity.jdnd.course3.critter.entity.Pet;
 import com.udacity.jdnd.course3.critter.repository.CustomerRepository;
 import com.udacity.jdnd.course3.critter.repository.PetRepository;
-import com.udacity.jdnd.course3.critter.user.CustomerDTO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,12 +35,10 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerDTO saveCustomer(CustomerDTO customerDTO) {
-        Customer customer = new Customer();
-        BeanUtils.copyProperties(customerDTO, customer);
+    public Customer saveCustomer(Customer customer, List<Long> petIds) {
         List<Pet> petsToAssociateWithCustomer = new ArrayList<>();
-        if (customerDTO.getPetIds() != null && customerDTO.getPetIds().size() > 0) {
-            customerDTO.getPetIds().forEach(petId -> {
+        if (petIds != null && petIds.size() > 0) {
+            petIds.forEach(petId -> {
                 Optional<Pet> retrievedPet = petRepository.findById(petId);
                 if (retrievedPet.isPresent() && retrievedPet.get().getCustomer() == null) {
                     retrievedPet.get().setCustomer(customer);
@@ -51,43 +47,18 @@ public class CustomerServiceImpl implements CustomerService {
             });
         }
         customer.setPets(petsToAssociateWithCustomer);
-        customerDTO.setId(customerRepository.save(customer).getId());
-        return customerDTO;
+        return customerRepository.save(customer);
     }
 
     @Override
-    public List<CustomerDTO> getAllCustomers() {
-        List<CustomerDTO> customerDTOS = new ArrayList<>();
-        List<Customer> customers = customerRepository.findAll();
-        for (int i = 0; i < customers.size(); i++) {
-            List<Long> petIds = new ArrayList<>();
-            CustomerDTO customerDTO = new CustomerDTO();
-            BeanUtils.copyProperties(customers.get(i), customerDTO);
-            if (customers.get(i).getPets() != null) {
-                customers.get(i).getPets().forEach(pet -> {
-                    petIds.add(pet.getId());
-                });
-            }
-            customerDTO.setPetIds(petIds);
-            customerDTOS.add(customerDTO);
-        }
-        return customerDTOS;
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
     }
 
     @Override
-    public CustomerDTO getOwnerByPet(long petId) {
-        CustomerDTO customerDTO = new CustomerDTO();
-        Customer customer = petRepository.findById(petId)
+    public Customer getOwnerByPet(long petId) {
+        return petRepository.findById(petId)
                 .orElseThrow(EntityNotFoundException::new).getCustomer();
-        BeanUtils.copyProperties(customer, customerDTO);
-        List<Long> petIds = new ArrayList<>();
-        if (customer.getPets() != null) {
-            customer.getPets().forEach(pet -> {
-                petIds.add(pet.getId());
-            });
-        }
-        customerDTO.setPetIds(petIds);
-        return customerDTO;
     }
 
 }

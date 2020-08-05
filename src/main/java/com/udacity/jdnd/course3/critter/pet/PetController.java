@@ -1,8 +1,11 @@
 package com.udacity.jdnd.course3.critter.pet;
 
+import com.udacity.jdnd.course3.critter.entity.Pet;
 import com.udacity.jdnd.course3.critter.service.PetService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,22 +23,55 @@ public class PetController {
 
     @PostMapping
     public PetDTO savePet(@RequestBody PetDTO petDTO) {
-        return petService.savePet(petDTO);
+        Pet pet = new Pet();
+//        pet.setBirthDate(petDTO.getBirthDate());
+//        pet.setName(petDTO.getName());
+//        pet.setNotes(petDTO.getNotes());
+        BeanUtils.copyProperties(petDTO, pet);
+        System.out.println(pet);
+        return convertPetToPetDTO(petService.savePet(pet, petDTO.getCustomerId()));
     }
 
     @GetMapping("/{petId}")
     public PetDTO getPet(@PathVariable long petId) {
-        return petService.getPet(petId);
+        return convertPetToPetDTO(petService.getPet(petId));
     }
 
     @GetMapping
     public List<PetDTO> getPets() {
-        return petService.getAllPets();
+        return convertPetsToPetsDto(petService.getAllPets());
     }
 
     @GetMapping("/owner/{ownerId}")
     public List<PetDTO> getPetsByOwner(@PathVariable long ownerId) {
-        System.out.println("SIZE OF GETPETSBYOWNER " + petService.getPetsByOwner(ownerId).size());
-       return petService.getPetsByOwner(ownerId);
+        return convertPetsToPetsDto(petService.getPetsByOwner(ownerId));
     }
+
+    private List<PetDTO> convertPetsToPetsDto(List<Pet> pets) {
+        List<PetDTO> petDTOS = new ArrayList<>();
+        if (pets != null && !pets.isEmpty()) {
+            pets.forEach(
+                    pet -> {
+                        PetDTO petDTO = new PetDTO();
+                        BeanUtils.copyProperties(pet, petDTO);
+                        if (pet.getCustomer() != null) {
+                            petDTO.setCustomerId(pet.getCustomer().getId());
+                        }
+                        petDTOS.add(petDTO);
+                    }
+            );
+        }
+        return petDTOS;
+    }
+
+    private PetDTO convertPetToPetDTO(Pet pet) {
+        PetDTO petDTO = new PetDTO();
+        BeanUtils.copyProperties(pet,
+                petDTO);
+        if (pet.getCustomer() != null) {
+            petDTO.setCustomerId(pet.getCustomer().getId());
+        }
+        return petDTO;
+    }
+
 }

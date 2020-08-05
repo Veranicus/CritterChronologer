@@ -1,16 +1,16 @@
 package com.udacity.jdnd.course3.critter.service;
 
-import com.udacity.jdnd.course3.critter.pet.PetDTO;
+import com.udacity.jdnd.course3.critter.entity.Pet;
 
 import java.util.List;
 
 public interface PetService {
 
-    PetDTO savePet(PetDTO petDTO);
+    Pet savePet(Pet pet, Long customerId);
 
-    PetDTO getPet(long petId);
+    Pet getPet(long petId);
 
-    List<PetDTO> getAllPets();
+    List<Pet> getAllPets();
 
-    List<PetDTO> getPetsByOwner(long ownerId);
+    List<Pet> getPetsByOwner(long ownerId);
 }
